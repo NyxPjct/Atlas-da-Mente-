@@ -2,6 +2,10 @@ import { randomBytes } from 'node:crypto'
 
 export const questionnaireSize = 20
 export const defaultPeriod = 'nos últimos três meses'
+export const questionnaireTemplate = {
+  title: 'Meu questionário', description: '', period: 'nas últimas duas semanas',
+  questions: Array.from({ length: questionnaireSize }, () => ({ theme: 'Geral', prompt: '' })),
+}
 
 function invalid(message) {
   throw Object.assign(new Error(message), { status: 400 })

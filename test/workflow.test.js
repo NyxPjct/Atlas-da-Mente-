@@ -223,10 +223,18 @@ test('questionário de 20 perguntas fica privado e seus envios sobrevivem ao arq
     const id = created.module.id
     const assignment = { patientCode: patient.data.account.pairCode, modules: [id] }
     const route = '/api/catalog/' + id
+    const template = await api('/api/questionnaires/template', { cookie })
+    assert.equal(template.data.questions.length, 20)
+    assert.match(template.headers.get('content-disposition'), /^attachment;/)
     assert.equal(created.module.count, 20)
     assert.equal(created.module.title, input.title.trim())
     assert.equal(created.module.questions, undefined)
     assert.deepEqual((await api(route, { cookie })).data.module.questions, questions)
+    const exportRoute = '/api/questionnaires/' + id + '/export'
+    const exported = await api(exportRoute, { cookie })
+    assert.deepEqual(exported.data.questions, questions)
+    assert.match(exported.headers.get('content-disposition'), /^attachment;/)
+    await api(exportRoute, { cookie: other.cookie, status: 404 })
     await api(route, { cookie: other.cookie, status: 404 })
     await api(route, { cookie: patient.cookie, status: 403 })
     await api('/api/assignments', { cookie: other.cookie, body: assignment, status: 400 })

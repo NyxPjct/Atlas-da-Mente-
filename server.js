@@ -2,10 +2,11 @@ import { createServer } from 'node:http'
 import { randomBytes } from 'node:crypto'
 import { createReadStream, mkdirSync, readFileSync, statSync } from 'node:fs'
 import { dirname, extname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { DatabaseSync } from 'node:sqlite'
 import { moduleMap, modules, frequencies } from './modules.js'
 import { createAccounts, normalizeEmail, transaction } from './accounts.js'
-import { patientSection, publicModule, questionnaireStore } from './questionnaires.js'
+import { patientSection, publicModule, questionnaireStore, questionnaireTemplate } from './questionnaires.js'
 
 const secure = process.env.NODE_ENV === 'production'
 const demo = process.env.ATLAS_DEMO === '1' || (!secure && process.env.ATLAS_DEMO !== '0')
@@ -284,6 +285,18 @@ async function api(request, response, path) {
   if (method === 'GET' && path === '/api/catalog') {
     return json(response, 200, { sections: [...modules, ...questionnaires.list(account.id)].map(patientSection) })
   }
+  if (method === 'GET' && path === '/api/questionnaires/template') {
+    return json(response, 200, questionnaireTemplate, { 'Content-Disposition': 'attachment; filename="atlas-modelo-questionario.json"' })
+  }
+  const exportMatch = /^\/api\/questionnaires\/(q-[a-zA-Z0-9_-]{24})\/export$/.exec(path)
+  if (method === 'GET' && exportMatch) {
+    const module = questionnaires.get(account.id, exportMatch[1])
+    if (!module) return json(response, 404, { error: 'Questionário não encontrado.' })
+    const { title, description, period, questions } = module
+    return json(response, 200, { title, description, period, questions }, {
+      'Content-Disposition': `attachment; filename="atlas-${module.id}.json"`,
+    })
+  }
   if (method === 'POST' && path === '/api/questionnaires') {
     const data = await readBody(request, 65_536)
     const current = requireRole(request, 'professional')
@@ -365,7 +378,8 @@ const types = {
   '.webp': 'image/webp', '.woff2': 'font/woff2', '.woff': 'font/woff',
   '.ttf': 'font/ttf', '.svg': 'image/svg+xml',
 }
-const indexPage = readFileSync(new URL('./public/index.html', import.meta.url))
+const appDirectory = fileURLToPath(new URL('.', import.meta.url))
+const indexPage = readFileSync(resolve(appDirectory, 'public/index.html'))
 const assetRoots = [
   ['/assets/', 'public/assets'],
   ['/fonts/dm-sans/', 'node_modules/@fontsource-variable/dm-sans'],
@@ -374,11 +388,11 @@ const assetRoots = [
 ]
 
 function getAsset(path) {
-  if (path === '/app.js' || path === '/styles.css') return resolve('public', path.slice(1))
+  if (path === '/app.js' || path === '/styles.css') return resolve(appDirectory, 'public', path.slice(1))
   for (const [prefix, folder] of assetRoots) {
     if (!path.startsWith(prefix)) continue
     const name = path.slice(prefix.length)
-    if (/^(?:files\/)?[a-z0-9_.-]+$/i.test(name) && types[extname(name)]) return resolve(folder, name)
+    if (/^(?:files\/)?[a-z0-9_.-]+$/i.test(name) && types[extname(name)]) return resolve(appDirectory, folder, name)
   }
   return null
 }
@@ -413,5 +427,7 @@ const server = createServer(async (request, response) => {
 })
 
 server.listen(Number(process.env.PORT || 3000), process.env.HOST || '0.0.0.0', () => {
-  console.log(`Atlas da Mente disponível na porta ${server.address().port}${demo ? ' (demonstração)' : ''}`)
+  const { port } = server.address()
+  process.parentPort?.postMessage({ port })
+  console.log(`Atlas da Mente disponível na porta ${port}${demo ? ' (demonstração)' : ''}`)
 })

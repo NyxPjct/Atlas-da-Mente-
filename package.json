@@ -1,6 +1,6 @@
 {
   "name": "atlas-da-mente",
-  "version": "0.1.0-beta.1",
+  "version": "0.0.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -9,11 +9,20 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "test": "node --test"
+    "test": "node --test",
+    "desktop": "electron .",
+    "desktop:build": "node scripts/build-desktop.mjs",
+    "android:build": "node scripts/build-android.mjs"
   },
   "dependencies": {
     "@fontsource-variable/dm-sans": "5.2.8",
     "@fontsource-variable/manrope": "5.2.8",
     "@phosphor-icons/web": "2.1.2"
-  }
+  },
+  "devDependencies": {
+    "@electron/packager": "20.3.0",
+    "electron": "42.11.18"
+  },
+  "main": "desktop/main.cjs",
+  "productName": "Atlas da Mente"
 }

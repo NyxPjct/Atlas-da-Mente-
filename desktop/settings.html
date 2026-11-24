@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="settings.css">
+  <title>Servidor do Atlas</title>
+</head>
+<body>
+  <main>
+    <h1>Servidor do Atlas</h1>
+    <p>Use o mesmo endereço no computador e no celular para acessar suas contas e avaliações.</p>
+    <form>
+      <label for="origin">Endereço do servidor</label>
+      <input type="url" id="origin" placeholder="https://atlas.exemplo.com" maxlength="512" spellcheck="false">
+      <p id="error" role="alert"></p>
+      <div class="actions">
+        <button class="secondary" id="demo" type="button">Usar demonstração local</button>
+        <button type="submit">Conectar</button>
+      </div>
+    </form>
+  </main>
+  <script src="settings.js" defer></script>
+</body>
+</html>

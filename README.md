@@ -1,8 +1,24 @@
 # Atlas da Mente
 
-**Versão de teste, 0.1.0-beta.1.** O Atlas da Mente é um aplicativo web em português para computador e celular. O psicólogo monta e envia uma avaliação. O paciente responde na própria conta e pode retomar de onde parou. Quando a avaliação é concluída, os dois podem consultar o resumo. Use dados fictícios nesta versão.
+**Versão de teste, 0.0.0.** O Atlas da Mente funciona no computador (Windows e Linux), no Android e pelo navegador. O psicólogo monta e envia uma avaliação. O paciente responde na própria conta e pode retomar o progresso. Após a conclusão, ambos podem consultar o resumo. Use dados fictícios nesta versão.
 
-## Comece pela demonstração
+## Aplicativos
+
+| Plataforma | Como abrir |
+| --- | --- |
+| **Windows x64** | Extraia todo o ZIP e abra `Atlas-da-Mente.exe`. O pacote de teste usa distribuição portátil. |
+| **Linux x64** | Extraia o ZIP e execute `Atlas-da-Mente` dentro da pasta extraída. Use uma sessão gráfica. |
+| **Android 8 ou superior** | Instale o APK de teste e informe o endereço do servidor na primeira tela. |
+
+No computador, o aplicativo abre uma demonstração local com SQLite. Para trabalhar com as mesmas contas nos dois aparelhos, escolha **Atlas da Mente → Servidor** no computador e **Menu → Servidor** no Android. Informe o mesmo endereço HTTPS de uma instância do Atlas nos dois. A demonstração interna do computador é acessível apenas naquele aparelho.
+
+### Testar o Android com um servidor local
+
+Em um computador na mesma rede Wi-Fi do celular, execute a versão web pela seção abaixo. No Android, informe `http://IP_DO_COMPUTADOR:3000` usando o endereço IPv4 da rede local. No emulador oficial do Android, use `http://10.0.2.2:3000`. A conexão HTTP na rede local é exclusiva para a demonstração com dados fictícios. Se o firewall bloquear a conexão, permita a porta 3000 na rede local de teste.
+
+Os pacotes desta versão usam distribuição de teste. O Windows pode pedir confirmação ao abrir o executável, e o Android pode pedir permissão para instalar o APK pelo aplicativo de arquivos. A assinatura do APK é de teste. Uma instalação assinada por outra chave pode precisar ser removida antes de instalar este APK.
+
+## Rodar pelo navegador
 
 Requer Node.js 24 ou superior e Git.
 
@@ -45,12 +61,35 @@ Abra **Módulos → Importar questionário**. Cole 20 perguntas de autorrelato, 
 
 Em **Meus questionários**, abra o módulo para revisar, exportar em JSON, arquivar ou reativar. Cada importação guarda uma versão independente. Arquivar tira o questionário dos novos envios. Avaliações que já o usam continuam disponíveis. Os questionários importados usam a escala de frequência e impacto do Atlas. A interpretação profissional e as condições de uso do material importado devem ser verificadas pelo autor do envio.
 
+## Capturas da demonstração
+
+| Painel profissional no computador | Conta do paciente no celular |
+| --- | --- |
+| ![Visão geral com status das avaliações](docs/prints/01-painel-desktop.png) | ![Minhas avaliações e código de vínculo](docs/prints/02-paciente-mobile.png) |
+| **Banco de módulos** | **Importação de questionários** |
+| ![Oito módulos de vinte questões](docs/prints/03-banco-de-modulos.png) | ![Importação por arquivo JSON no celular](docs/prints/04-importar-questionario.png) |
+
 ## Desenvolvimento e testes
 
 - `npm run dev` reinicia o servidor quando o código do backend muda.
 - `npm test` verifica o catálogo, o isolamento entre contas, o progresso, a migração de versões anteriores e os questionários importados.
 
-O frontend usa HTML, CSS e JavaScript. O servidor usa Node.js e SQLite. O Git ignora bancos locais, dependências instaladas e o arquivo `.env`.
+O frontend usa HTML, CSS e JavaScript. O servidor usa Node.js e SQLite. O computador usa Electron, e o Android usa a WebView do sistema. O Git ignora bancos locais, dependências, saídas de compilação e o arquivo `.env`.
+
+### Empacotar para computador
+
+```sh
+npm ci
+npm run desktop
+npm run desktop:build -- win32
+npm run desktop:build -- linux
+```
+
+Os pacotes x64 saem em `dist/desktop`. Use o pacote correspondente ao sistema de destino.
+
+### Compilar o APK de teste
+
+Instale o JDK 17 ou superior e o SDK do Android com **Android SDK Platform 35** e **Build Tools 35.0.1**. Aponte a variável `ANDROID_HOME` para seu SDK e rode `npm run android:build`. O APK assinado sai em `dist/android/Atlas-da-Mente-0.0.0-teste.apk`. A chave de teste fica no diretório de saída.
 
 ## Instância com contas privadas
 

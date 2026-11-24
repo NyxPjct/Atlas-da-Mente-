@@ -377,14 +377,10 @@ async function importContent(data) {
   return { title: data.get('title'), description: data.get('description'), period: data.get('period'), questions }
 }
 
-function downloadQuestionnaire({ title, description, period, questions }, filename) {
-  const blob = new Blob([JSON.stringify({ title, description, period, questions }, null, 2) + '\n'], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
+function downloadQuestionnaire(path) {
   const link = document.createElement('a')
-  link.href = url
-  link.download = filename
+  link.href = path
   link.click()
-  setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
 function login(register = false) {
@@ -611,7 +607,10 @@ document.addEventListener('click', async event => {
   if (action === 'new') openNew()
   if (action === 'close') dialog.close()
   if (action === 'reload') location.reload()
-  if (action === 'print') window.print()
+  if (action === 'print') {
+    if (navigator.userAgent.includes('AtlasAndroid/')) location.href = 'atlas-print:report'
+    else window.print()
+  }
   if (action === 'refresh') await perform(control, async () => {
     await refreshProfessional()
     document.querySelector('[data-action="refresh"]')?.focus()
@@ -623,16 +622,12 @@ document.addEventListener('click', async event => {
     document.querySelector(`[data-action="${action}"]`)?.focus()
   }
   if (action === 'import') openImport()
-  if (action === 'import-template') downloadQuestionnaire({
-    title: 'Meu questionário', description: '', period: 'nas últimas duas semanas',
-    questions: Array.from({ length: 20 }, () => ({ theme: 'Geral', prompt: '' })),
-  }, 'atlas-modelo-questionario.json')
+  if (action === 'import-template') downloadQuestionnaire('/api/questionnaires/template')
   if (action === 'module') await perform(control, () => showModule(module))
-  if (action === 'export-module') await perform(control, async () => {
+  if (action === 'export-module') {
     const { module: id } = control.closest('.library-controls').dataset
-    const { module: questionnaire } = await request('/api/catalog/' + id)
-    downloadQuestionnaire(questionnaire, `atlas-${id}.json`)
-  })
+    downloadQuestionnaire('/api/questionnaires/' + id + '/export')
+  }
   if (action === 'archive-module') await perform(control, async () => {
     const { module: id, archived } = control.closest('.library-controls').dataset
     const result = await request('/api/questionnaires/' + id + '/archive', { archived: archived === 'false' })
